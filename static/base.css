@@ -1,0 +1,20 @@
+html {
+    font-family: sans-serif;
+    background: #fafafa;
+    color: #555;
+}
+
+.activity-input input {
+    font-size: 1.3em;
+    width: 100%;
+}
+
+#input_syntax {
+    color: #999;
+    padding: 10px 0;
+}
+
+#input_syntax .current {
+    color: #333;
+    text-decoration: underline;
+}
