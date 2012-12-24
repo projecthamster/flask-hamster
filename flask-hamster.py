@@ -7,11 +7,18 @@ from flask import Flask, request, session, g, redirect, url_for, abort, \
 
 
 from flask import Flask
+
+from hamster import db
+import os
+
+# todo - unhardcode in some magic way
+client = db.Storage(database_dir=os.path.expanduser("~/.local/share/hamster-applet/"))
 app = Flask(__name__)
 
 @app.route("/")
 def hello():
-    return render_template("base.html")
+    activities = client.get_activities()
+    return render_template("base.html", activities=activities)
 
 
 @app.route("/recent")
