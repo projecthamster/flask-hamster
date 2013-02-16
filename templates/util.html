@@ -1,0 +1,25 @@
+{% macro human_duration(d) %}
+    {% set minutes = (d.total_seconds() / 60.0)|round %}
+    {% if minutes > 60 %}
+        {{ "%dh" % (minutes / 60.0) }}
+    {% endif %}
+
+    {{ "%dmin" % (minutes % 60) }}
+{% endmacro %}
+
+{% macro friendly_date(date) %}
+    {% if date == today %}
+        Today
+    {% else %}
+        {{ date.strftime("%A,") }}
+        {{ ordinal(date.day) }}
+    {% endif %}
+{% endmacro %}
+
+{% macro ordinal(num) %}
+    {%- if 10 <= num % 100 < 20 -%}
+        {{ "%dth" % num }}
+    {%- else -%}
+       {{ "%d%s" % (num, {1 : 'st', 2 : 'nd', 3 : 'rd'}.get(num % 10, "th")) }}
+    {%- endif -%}
+{% endmacro %}

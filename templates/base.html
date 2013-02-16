@@ -1,143 +1,29 @@
+{% import "util.html" as util %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Hello, citizen Kane</title>
+    <title>{% block title %}Hello, citizen Kane{% endblock %}</title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='font-awesome.css') }}">
+    <link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:300italic,400italic,700italic,400,700,300' rel='stylesheet' type='text/css'>
 
-    <script type="text/javascript" src="{{ url_for('static', filename='jquery-1.7.1.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='base.js') }}"></script>
+    {% block styles %}
+        <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='font-awesome.css') }}">
+    {% endblock %}
 
-    <script type="text/javascript">
-        function currentPhase() {
-            parts = ["time-or-activity", "activity", "category", "comment-and-tags"]
-
-
-            // tries to figure out at which input part are we right now
-            var activity = Activity($(".activity-input input").val());
-            var lastChar = activity.unparsed.substring(activity.unparsed.length-1);
-
-            if (!activity.unparsed) {
-                return 0;
-            }
-
-            var index = 0;
-            if (!activity.activity) {
-                index = 0;
-            } else if (!activity.comment && activity.tags.length==0) {
-                if (activity.unparsed.indexOf("@") == -1) {
-                    index = 1
-                } else {
-                    index = 2
-                }
-                if (lastChar == " ")
-                    index +=1;
-            } else if (activity.comment || activity.tags.length > 0) {
-                index = 3;
-            }
-
-            if (lastChar == " ") {
-                index += 1;
-            }
-            return parts[Math.min(index, parts.length-1)]
-        }
-
-        var prevPhase = "time-or-activity";
-        $(document).ready(function() {
-            $(".activity-input input").keyup(function() {
-                var phase = currentPhase();
-
-                if (phase != prevPhase) {
-                    console.log(phase)
-
-                    prevPhase = phase;
-                    $("#hints > div").stop().hide();
-                    $("#hints ." + phase).stop().fadeIn();
-
-                    $("#input_syntax span").removeClass("current");
-                    $("#input_syntax ." + phase).addClass("current");
-
-
-                }
-            });
-        })
-    </script>
+    {% block scripts %}
+        <script type="text/javascript" src="{{ url_for('static', filename='jquery-1.7.1.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='base.js') }}"></script>
+    {% endblock %}
 </head>
 
 <body>
     <div class="container">
-        <div class="row" style="margin-top: 1em">
-            <div class="span12">
-                <b>Start activity</b>
-            </div>
-        </div>
-
-        <div class="row">
-            <span class="span7 activity-input">
-                <input />
-            </span>
-            <span class="span5">
-                <div id="input_hint" style="font-size: 0.85em">
-                    <div id="input_syntax">
-                        <span class="time-or-activity current">
-                            Time or
-                            <span class="activity">activity</span></span><span class="category">@category</span>
-
-                        <span class="comment-and-tags">#tags and comment</span>
-                    </div>
-                    <div id="hints" style="padding-top: 20px">
-                        <div class="time-or-activity">
-                            <p>
-                                Start by entering time or activity name.
-                            </p>
-                            <p>
-                                Time can be either a delta (-x minutes ago),
-                                or a specific hour and minute (15:30).
-                            </p>
-                            <p>
-                                You can enter both start and end time or just
-                                start time.
-                            </p>
-                        </div>
-                        <div class="activity" style="display: none">
-                            <p>
-                                You can create new activities just by starting
-                                one that you haven't used yet.
-                            </p>
-                            <p>
-                                Specify a category by appending @ symbol to the
-                                activity.
-                            </p>
-                            <p>
-                                Activity names are case insensitive
-                            </p>
-                        </div>
-                        <div class="category" style="display: none">
-                            <p>
-                                You can create new categories just by typing
-                                one that you haven't used yet.
-                            </p>
-                            <p>
-                                You can have same activity in several categories
-                                (they will count as several activities)
-                            </p>
-                        </div>
-                        <div class="comment-and-tags" style="display: none">
-                            <p>
-                                Prefix tags with a hash tag (#tag1, #tag2, etc)
-                            </p>
-                            <p>
-                                And for comment just type in series of words and
-                                it will be saved as a comment.
-                            </p>
-                        </div>
-                    </div>
-            </span>
-        </div>
+        {% block content %}{% endblock %}
     </div>
-
 </body>
+

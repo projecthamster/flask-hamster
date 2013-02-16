@@ -1,5 +1,5 @@
 html {
-    font-family: sans-serif;
+    font-family: 'Roboto Condensed', sans-serif;
     background: #fafafa;
     color: #555;
 }
@@ -17,4 +17,83 @@ html {
 #input_syntax .current {
     color: #333;
     text-decoration: underline;
+}
+
+.facts {
+    width: 100%;
+}
+
+.facts td {
+    padding-right: 10px;
+}
+
+.facts td:last-child {
+    padding-right: 0;
+}
+
+.description {
+    font-style: italic;
+    color: #777;
+}
+
+.category {
+    color: #777;
+    font-size: 0.85em;
+}
+
+.start-time, .duration {
+    width: 1%;
+    white-space: nowrap;
+    text-align: right;
+}
+
+.before {
+    margin-top: 2em;
+}
+
+.container {
+    padding-bottom: 2em;
+}
+
+.day-row > span {
+    padding: 10px 0;
+}
+
+.month {
+    font-size: 3em;
+    color: #666;
+    font-weight: bold;
+}
+
+.year {
+    font-size: 5em;
+    color: #999;
+    font-weight: bold;
+    display: block;
+}
+
+.new-month {
+    border-top: 2px solid #ddd;
+}
+
+.new-year, .new-month.new-year {
+    border-top: 2px solid #FF9797;
+}
+
+.date-header {
+    font-size: 2em;
+    margin: 0;
+    padding: 0;
+}
+
+.before .row:first-child {
+    border-top: none;
+}
+
+.drilldown {
+}
+
+.yearmonth {
+    position: absolute;
+    right: 0;
 }
