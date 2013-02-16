@@ -1,0 +1,25 @@
+h1. flask-hamster
+
+Experimental hamster flask app. Right now it's super rough and can only list your current activites.
+I've started this project merely to pick up flask and advanced javascript, but the general 
+direction makes sense, methinks!
+
+There is no rush nor priority, so it's gonna be ready whenever if ever.
+Here is what it looks like right now:
+
+!http://farm9.staticflickr.com/8365/8479077003_d49491b7bb_b.jpg!
+
+
+The good news is that it's using the same db/client code that hamster does, so there is no code duplication there!
+
+h1. Installing
+
+# i suggest you create a virtualenv for this project
+# @pip-install -r requirements.txt@
+# @./flask-hamster.py@
+# now it's on your localhost: http://localhost:5000/
+
+h1. Bugs
+
+bug reports ain't accepted at this moment, nor feature requests and me-toos and +1 :)
+but if you have a pull request where you like totally add cool stuff, then i'm all for it!
