@@ -14,6 +14,8 @@ The good news is that it's using the same db/client code that hamster does, so t
 
 h1. Installing
 
+The project right now assumes that you have a populated hamster database in ya homes.
+
 # i suggest you create a virtualenv for this project
 # @pip-install -r requirements.txt@
 # @./flask-hamster.py@
