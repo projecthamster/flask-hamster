@@ -41,9 +41,13 @@ html {
     font-size: 0.85em;
 }
 
+
 .start-time, .duration {
     width: 1%;
     white-space: nowrap;
+}
+
+.duration {
     text-align: right;
 }
 
@@ -77,7 +81,7 @@ html {
 }
 
 .new-year, .new-month.new-year {
-    border-top: 2px solid #FF9797;
+    border-top: 2px solid #aaa;
 }
 
 .date-header {

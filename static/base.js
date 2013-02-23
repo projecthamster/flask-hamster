@@ -76,3 +76,11 @@ function Activity(fragment) {
 
     return activity;
 }
+
+function flashUpdate(container) {
+    $(container).css({backgroundColor: "#FFFD00"})
+                .animate({backgroundColor: "#fafafa"}, "slow", function(){
+                    $(container).css({backgroundColor: ""}); // unset at the end
+                })
+
+}

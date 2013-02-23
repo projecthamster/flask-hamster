@@ -27,7 +27,7 @@
 {% endmacro %}
 
 {% macro day_listing(date, facts) %}
-    <div class="row day-row fresh" year="{{ date.year }}" month="{{ date.strftime("%B") }}" date="{{ date.day }}">
+    <div class="row day-row fresh" date="{{ date.strftime("%Y-%m-%d")}}" year="{{ date.year }}" month="{{ date.strftime("%B") }}" day="{{ date.day }}">
         <span class="span7 drilldown">
             <h1 class="date-header">{{ util.friendly_date(date) }}</h1>
             {{ fact_listing(facts) }}
@@ -56,8 +56,7 @@
                     or a specific hour and minute (15:30).
                 </p>
                 <p>
-                    You can enter both start and end time or just
-                    start time.
+                    You can enter just start time or both start and end times.
                 </p>
             </div>
             <div class="activity" style="display: none">
@@ -127,6 +126,19 @@
                     }
                 });
 
+                $(".activity-input form").submit(function(evt){
+                    evt.preventDefault();
+                    $.post("{{ url_for('activities') }}", $(this).serialize(), function(response) {
+                        var row = $(".day-row[date=" + response.date + "]")
+                        if (row) {
+                            var day = $(response.rendered);
+                            var facts = day.find(".facts");
+                            row.find(".facts").replaceWith(facts);
+                            flashUpdate(row);
+                        }
+                    });
+                });
+
                 $(window).on("scroll", function() {
                     loadOnPageEnd();
                 });
@@ -167,7 +179,9 @@
 
         <div class="row">
             <span class="span7 activity-input">
-                <input />
+                <form>
+                    <input name="activity" />
+                </form>
             </span>
             <span class="span5">
                 {{ hints() }}

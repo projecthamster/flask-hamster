@@ -17,6 +17,7 @@
 
     {% block scripts %}
         <script type="text/javascript" src="{{ url_for('static', filename='jquery-1.7.1.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='jquery.color-2.1.1.min.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='base.js') }}"></script>
     {% endblock %}
 </head>
@@ -26,4 +27,3 @@
         {% block content %}{% endblock %}
     </div>
 </body>
-
