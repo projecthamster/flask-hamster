@@ -101,3 +101,12 @@ html {
     position: absolute;
     right: 0;
 }
+
+
+#current_activity {
+    font-size: 2em;
+}
+
+#current_activity_duration {
+    float: right;
+}
