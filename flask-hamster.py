@@ -5,19 +5,26 @@ import datetime as dt
 import itertools
 from operator import itemgetter
 
-from flask import Flask, request, session, redirect, url_for, abort, \
-     render_template, jsonify
-
-
+import flask
+from flask import request, session, redirect, url_for, abort, render_template
 from flask import Flask
 
 from hamster import db
 from hamster import lib as hamster_lib
 import os
 
+events = []
 # todo - unhardcode in some magic way
-client = db.Storage(database_dir=os.path.expanduser("~/.local/share/hamster-applet/"))
-app = Flask(__name__)
+class StorageWithEvents(db.Storage):
+    def facts_changed(self):
+        events.append("hello")
+
+client = StorageWithEvents(database_dir=os.path.expanduser("~/.local/share/hamster-applet/"))
+
+
+
+app = flask.Flask(__name__)
+import time
 
 def _days_ago(days):
     return (dt.datetime.now() - dt.timedelta(days=days)).date()
@@ -31,11 +38,24 @@ def _get_facts(start_date, end_date):
                 for date, facts in itertools.groupby(facts, itemgetter("date"))]
     return res
 
+def event_stream():
+    if events:
+        while events:
+            yield "data: %s\n\n" % events.pop(0)
+
+@app.route('/stream')
+def stream():
+    return flask.Response(event_stream(),
+                          mimetype="text/event-stream")
+
 @app.route("/")
-def hello():
+def index():
+    todays_facts=client.get_todays_facts()
+    last_activity = todays_facts[-1] if todays_facts and not todays_facts[-1]['end_time'] else None
+
     return render_template("index.html",
                            activities=client.get_activities(),
-                           todays_facts=client.get_todays_facts(),
+                           last_activity=last_activity,
                            before=reversed(_get_facts(_days_ago(10), _days_ago(1))),
                            today=dt.datetime.today().date(),
                            )
@@ -82,7 +102,34 @@ def activities():
 
     day = _render_dates(start_time)
 
-    return jsonify(date=start_time.strftime("%Y-%m-%d"), rendered=day)
+    return flask.jsonify(date=start_time.strftime("%Y-%m-%d"), rendered=day)
+
+@app.route('/today', methods=['GET'])
+def today():
+    facts = client.get_todays_facts()
+    if not facts:
+        return ""
+
+    date = facts[0]["date"]
+    today = render_template("index.html",
+                            just_facts=True,
+                            facts=[(date, facts)])
+    last_activity = facts[-1]
+    if not last_activity["end_time"]:
+        # TODO - what's going on here - why isn't __iter__ in hamster_lib taking care of this?
+        last_activity['start_time'] = last_activity['start_time'].strftime("%H:%M")
+        delta_minutes = last_activity['delta'].total_seconds() / 60
+        last_activity['delta'] = "%02d:%02d" % (delta_minutes / 60,
+                                                delta_minutes % 60)
+        del last_activity['date']
+    else:
+        last_activity = None
+
+
+
+    return flask.jsonify(date=date.strftime("%Y-%m-%d"),
+                         rendered=today,
+                         last_activity=last_activity)
 
 
 

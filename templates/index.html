@@ -108,6 +108,39 @@
         <script type="text/javascript" src="{{ url_for('static', filename='index.js') }}"></script>
 
         <script type="text/javascript">
+            function updateDay(date, contents, skipFlash) {
+
+                var row = $(".day-row[date=" + date + "]");
+                if (row) {
+                    var day = $(contents);
+                    var facts = day.find(".facts");
+                    row.find(".facts").replaceWith(facts);
+
+                    if (!skipFlash)
+                        flashUpdate(row);
+                }
+            }
+
+            function setCurrentActivity(fact){
+                if (!fact) {
+                    $("#current_activity div").html("");
+                    return
+                }
+
+                var activity = fact.name;
+                if (fact.category)
+                    activity += "@" + fact.category
+                $("#current_activity_name").text(activity);
+
+                $("#current_activity_duration").text(fact.delta);
+
+                if (fact.tags)
+                    $("#current_activity_tags").text(fact.tags);
+
+                if (fact.description)
+                    $("#current_activity_description").text(fact.description);
+            }
+
             $(document).ready(function() {
                 $(".activity-input input").keyup(function() {
                     var phase = currentPhase();
@@ -129,13 +162,7 @@
                 $(".activity-input form").submit(function(evt){
                     evt.preventDefault();
                     $.post("{{ url_for('activities') }}", $(this).serialize(), function(response) {
-                        var row = $(".day-row[date=" + response.date + "]")
-                        if (row) {
-                            var day = $(response.rendered);
-                            var facts = day.find(".facts");
-                            row.find(".facts").replaceWith(facts);
-                            flashUpdate(row);
-                        }
+                        updateDay(response.date, response.rendered)
                     });
                 });
 
@@ -166,6 +193,36 @@
                 }
 
                 checkMonthYear();
+
+
+                // reload affected days
+                var changeEvents = new EventSource('/stream');
+                changeEvents.onmessage = function(e) {
+                    console.log("facts changed, we should do something!", e.data);
+                    reloadToday();
+                };
+
+                // reload current day once a minute
+                var ongoingActivity=true;
+                function reloadToday() {
+                    if (!ongoingActivity)
+                        return;
+
+                    var today = $.get("{{ url_for('today') }}", function(response) {
+                        if (!response) {
+                            ongoingActivity = false;
+                            setCurrentActivity()
+                            return;
+                        }
+                        updateDay(response.date, response.rendered, true)
+                        setCurrentActivity(response.last_activity)
+                    });
+                };
+
+                setInterval(reloadToday, 60 * 1000);
+
+                reloadToday(); // TODO - fix initial display instead
+
             })
         </script>
     {% endblock %}
@@ -182,6 +239,16 @@
                 <form>
                     <input name="activity" />
                 </form>
+
+                <div id="current_activity">
+                    <div id="current_activity_duration"></div>
+                    <div id="current_activity_name">
+                    </div>
+                    <div id="current_activity_tags">
+                    </div>
+                    <div id="current_activity_description">
+                    </div>
+                </div>
             </span>
             <span class="span5">
                 {{ hints() }}
