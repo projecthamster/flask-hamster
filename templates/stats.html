@@ -23,8 +23,6 @@
         ]
 
 
-        var bananas = null;
-
         function renderCategoryStack(facts) {
             var byDateCategory = d3.nest()
                 .key(function(d) { return dateFormat(d.date); })
@@ -39,9 +37,9 @@
             allCategories = d3.keys(allCategories)
 
 
-            var margin = {top: 20, right: 20, bottom: 30, left: 50},
-                width = 960 - margin.left - margin.right,
-                height = 500 - margin.top - margin.bottom;
+            var margin = {top: 0, right: 0, bottom: 0, left: 0},
+                width = 800 - margin.left - margin.right,
+                height = 400 - margin.top - margin.bottom;
 
             var x = d3.time.scale()
                 .range([0, width]);
@@ -51,7 +49,7 @@
                 .range([height, 0]);
 
 
-            var svg = d3.select("body").append("svg")
+            var svg = d3.select("#by_date_category").append("svg")
                 .attr("width", width + margin.left + margin.right)
                 .attr("height", height + margin.top + margin.bottom)
               .append("g");
@@ -71,8 +69,6 @@
 
             y.domain([0, d3.max(byDateCategory, function(d) { return d.total; })]);
 
-            console.log(byDateCategory)
-
             var day = svg.selectAll(".day")
                 .data(byDateCategory)
               .enter().append("g")
@@ -90,8 +86,137 @@
         }
 
 
+        function renderTaskCounts(facts) {
+            var byDate = d3.nest()
+                .key(function(d) { return dateFormat(d.date); })
+                .rollup(function(d) { return d.length })
+                .map(facts, d3.map);
+            byDate = byDate.entries()
+
+            var margin = {top: 0, right: 0, bottom: 0, left: 0},
+                width = 800 - margin.left - margin.right,
+                height = 100 - margin.top - margin.bottom;
+
+            var x = d3.time.scale().range([0, width]);
+            x.domain(d3.extent(byDate, function(d) { return dateFormat.parse(d.key); }));
+
+            var y = d3.scale.linear().range([height, 0]);
+
+
+            var svg = d3.select("#by_task_count").append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+              .append("g");
+
+
+            y.domain([0, d3.max(byDate, function(d) { return d.value; })]);
+
+
+            svg.selectAll(".bar")
+                .data(byDate)
+              .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", function(d) { return x(dateFormat.parse(d.key)); })
+                .attr("width", width / byDate.length)
+                .attr("y", function(d) { return y(d.value); })
+                .attr("height", function(d) { return height - y(d.value); })
+                .attr("fill", "#3684BA");
+        }
+
+
+        function renderAvgTaskLength(facts) {
+            var byDate = d3.nest()
+                .key(function(d) { return dateFormat(d.date); })
+                .rollup(function(d) { return d3.sum(d, function(d2){ return d2.minutes;}) / d.length })
+                .map(facts, d3.map);
+            byDate = byDate.entries()
+
+            var margin = {top: 0, right: 0, bottom: 0, left: 0},
+                width = 800 - margin.left - margin.right,
+                height = 100 - margin.top - margin.bottom;
+
+            var x = d3.time.scale().range([0, width]);
+            x.domain(d3.extent(byDate, function(d) { return dateFormat.parse(d.key); }));
+
+            var y = d3.scale.linear().range([height, 0]);
+
+
+            var svg = d3.select("#by_avg_length").append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+              .append("g");
+
+
+            y.domain([0, d3.max(byDate, function(d) { return d.value; })]);
+
+
+            svg.selectAll(".bar")
+                .data(byDate)
+              .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", function(d) { return x(dateFormat.parse(d.key)); })
+                .attr("width", width / byDate.length)
+                .attr("y", function(d) { return y(d.value); })
+                .attr("height", function(d) { return height - y(d.value); })
+                .attr("fill", "#3684BA");
+        }
+
+
+        function renderStartsEnds(facts) {
+            // XXX - this does not consider hamster midnight yet (~5am)
+            var byDate = d3.nest()
+                .key(function(d) { return dateFormat(d.date); })
+                .rollup(function(d) {
+                            function toMinutes(time) {
+                                if (time) {
+                                    return time.getHours() * 60 + time.getMinutes();
+                                } else {
+                                    return 0;
+                                }
+                            }
+                            var minStart = d3.min(d, function(d2){ return d2.start;});
+                            var maxEnd = d3.max(d, function(d2){ return d2.end;})
+                            return [toMinutes(minStart), toMinutes(maxEnd)]
+                        })
+                .map(facts, d3.map);
+            byDate = byDate.entries()
+
+            var margin = {top: 0, right: 0, bottom: 0, left: 0},
+                width = 800 - margin.left - margin.right,
+                height = 400 - margin.top - margin.bottom;
+
+            var x = d3.time.scale().range([0, width]);
+            x.domain(d3.extent(byDate, function(d) { return dateFormat.parse(d.key); }));
+
+            var y = d3.scale.linear().range([height, 0]);
+
+
+            var svg = d3.select("#by_starts_ends").append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+              .append("g");
+
+
+            y.domain([0, 1440]);
+
+
+            svg.selectAll(".bar")
+                .data(byDate)
+              .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", function(d) { return x(dateFormat.parse(d.key)); })
+                .attr("width", width / byDate.length)
+                .attr("y", function(d) { return y(d.value[1]); })
+                .attr("height", function(d) { return y(d.value[1] - d.value[0]); })
+                .attr("fill", "#3684BA");
+        }
+
+
         $(document).ready(function() {
             renderCategoryStack(facts);
+            renderTaskCounts(facts);
+            renderAvgTaskLength(facts);
+            renderStartsEnds(facts);
         });
 
 
@@ -101,7 +226,28 @@
 {% block content %}
     <h1>Not really nifty but at least a beginning</h1>
 
+    <h3 style="color: #aaa; margin-top: 3em;">
+        Here's time by category. Looks really cool if you have 6 years of
+        hamster history, track your jobs as categories and change jobs like me.
+    </h3>
     <div id="by_date_category"></div>
 
+    <h3 style="color: #aaa; margin-top: 3em;">
+        Here's by number of tasks per day (interruptions) - might be better as
+        line graph.
+    </h3>
+    <div id="by_task_count"></div>
+
+    <h3 style="color: #aaa; margin-top: 3em;">
+        Here's by average task length (shows your tracking pattern; longer=less precision)
+    </h3>
+    <div id="by_avg_length"></div>
+
+
+    <h3 style="color: #aaa; margin-top: 3em;">
+        Aaaand here's one with starts and ends (being awake and such; i don't
+        think it is working properly right now)
+    </h3>
+    <div id="by_starts_ends"></div>
 
 {% endblock %}
