@@ -60,6 +60,13 @@ def index():
                            today=dt.datetime.today().date(),
                            )
 
+@app.route("/stats")
+def stats():
+    facts=client.get_facts(dt.date(2007,1,1), dt.datetime.now().date(), "")
+    return render_template("stats.html",
+                           facts=facts,
+                           )
+
 
 def _render_dates(start_date, end_date=None):
     end_date = end_date or start_date
@@ -136,4 +143,5 @@ def today():
 
 if __name__ == "__main__":
     #app.debug = True
+    print "Pretty sure i'm running on http://127.0.0.1:5000"
     app.run()

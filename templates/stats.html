@@ -1,0 +1,107 @@
+{% import "util.html" as util %}
+
+{% extends "base.html" %}
+
+{% block scripts %}
+    {{ super() }}
+    <script type="text/javascript" src="{{ url_for('static', filename='d3.v3.min.js') }}"></script>
+
+    <script type="text/javascript">
+        var dateFormat = d3.time.format("%Y-%m-%d");
+        var datetimeFormat = d3.time.format("%Y-%m-%dT%H:%M:%S");
+
+        var facts = [
+            {%- for fact in facts -%}
+                {date: dateFormat.parse("{{ fact.date.strftime("%Y-%m-%d") }}"),
+                 start: datetimeFormat.parse("{{ fact.start_time.strftime("%Y-%m-%dT%H:%M:%S") }}"),
+                 end: datetimeFormat.parse("{{ fact.end_time.strftime("%Y-%m-%dT%H:%M:%S") if fact.end_time}}"),
+                 minutes: {{ "%d" % (fact.delta.total_seconds() / 60.0)|round }},
+                 name: "{{ fact.name }}",
+                 category: "{{ fact.category }}",
+                },
+            {% endfor %}
+        ]
+
+
+        var bananas = null;
+
+        function renderCategoryStack(facts) {
+            var byDateCategory = d3.nest()
+                .key(function(d) { return dateFormat(d.date); })
+                .key(function(d) { return d.category; })
+                .rollup(function(d) { return d3.sum(d, function(d2){ return d2.minutes;}) })
+                .map(facts, d3.map);
+            byDateCategory = byDateCategory.entries()
+
+            /* XXX - ooh, this looks lame, need more d3 fu! */
+            var allCategories = {}
+            byDateCategory.forEach(function(d){d3.keys(d.value).forEach(function(d2) {allCategories[d2]=1})});
+            allCategories = d3.keys(allCategories)
+
+
+            var margin = {top: 20, right: 20, bottom: 30, left: 50},
+                width = 960 - margin.left - margin.right,
+                height = 500 - margin.top - margin.bottom;
+
+            var x = d3.time.scale()
+                .range([0, width]);
+            x.domain(d3.extent(byDateCategory, function(d) { return dateFormat.parse(d.key); }));
+
+            var y = d3.scale.linear()
+                .range([height, 0]);
+
+
+            var svg = d3.select("body").append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+              .append("g");
+
+
+            // determine which name will be which color
+            var color = d3.scale.category20();
+            color.domain(allCategories);
+
+            byDateCategory.forEach(function(d) {
+                var y0 = 0;
+                // iterate through cats so the stack order is always the same
+                // add the struc as .categories
+                d.categories = color.domain().map(function(name) { return {name: name, y0: y0, y1: y0 += +(d.value[name] || 0)}; });
+                d.total = d.categories[d.categories.length - 1].y1;
+            });
+
+            y.domain([0, d3.max(byDateCategory, function(d) { return d.total; })]);
+
+            console.log(byDateCategory)
+
+            var day = svg.selectAll(".day")
+                .data(byDateCategory)
+              .enter().append("g")
+                .attr("class", "g")
+                .attr("transform", function(d) { return "translate(" + x(dateFormat.parse(d.key)) + ",0)"; });
+
+            day.selectAll("rect")
+                .data(function(d) { return d.categories; })
+              .enter().append("rect")
+                .attr("width", width / byDateCategory.length)
+                .attr("y", function(d) { return y(d.y1); })
+                .attr("height", function(d) { return y(d.y0) - y(d.y1); })
+                .style("fill", function(d) { return color(d.name); });
+
+        }
+
+
+        $(document).ready(function() {
+            renderCategoryStack(facts);
+        });
+
+
+    </script>
+{% endblock %}
+
+{% block content %}
+    <h1>Not really nifty but at least a beginning</h1>
+
+    <div id="by_date_category"></div>
+
+
+{% endblock %}

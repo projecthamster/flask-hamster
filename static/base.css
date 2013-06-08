@@ -4,6 +4,28 @@ html {
     color: #555;
 }
 
+#nav_container {
+    background: #666;
+}
+
+#navigation {
+    width: 950px;
+    margin: 0 auto;
+    padding: 10px;
+}
+
+#navigation a {
+    color: #fafafa;
+    text-decoration: none;
+    padding: 5px 10px;
+    font-size: 2em;
+    font-weight: bold;
+}
+
+#navigation a:hover {
+    text-decoration: underline;
+}
+
 .activity-input input {
     font-size: 1.3em;
     width: 100%;
