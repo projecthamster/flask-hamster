@@ -5,6 +5,7 @@ import datetime as dt
 import itertools
 from operator import itemgetter
 
+import json
 import flask
 from flask import request, session, redirect, url_for, abort, render_template
 from flask import Flask
@@ -59,6 +60,23 @@ def index():
                            before=reversed(_get_facts(_days_ago(10), _days_ago(1))),
                            today=dt.datetime.today().date(),
                            )
+
+
+@app.route("/json_all")
+def json_all():
+    facts=client.get_facts(dt.date(2007,1,1), dt.datetime.now().date(), "")
+    facts = reversed(facts)
+
+    res=[]
+    for fact in facts:
+        fact['start_time'] = fact['start_time'].strftime("%Y-%m-%d %H:%M:%S")
+        if fact['end_time']:
+            fact['end_time'] = fact['end_time'].strftime("%Y-%m-%d %H:%M:%S")
+        fact['delta'] = int(fact['delta'].total_seconds() // 60)
+        fact['date'] = fact['date'].strftime("%Y-%m-%d %H:%M:%S")
+        res.append(fact)
+    return json.dumps(res)
+
 
 @app.route("/stats")
 def stats():
